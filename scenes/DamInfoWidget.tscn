@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3 uid="uid://bj8k5mam2xpqr"]
+
+[ext_resource type="Script" uid="uid://c6pds54xh1bfn" path="res://scripts/DamInfoWidget.gd" id="1_0x4yg"]
+
+[node name="DamInfoWidget" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1600.0
+offset_bottom = -1080.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0x4yg")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NameLabel" type="Label" parent="HBox"]
+layout_mode = 2
+text = "Плотина 1"
+
+[node name="StatusLabel" type="Label" parent="HBox"]
+layout_mode = 2
+text = "Работает"
+
+[node name="PowerLabel" type="Label" parent="HBox"]
+layout_mode = 2
+text = "100 МВт"
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="IntegrityBar" type="ProgressBar" parent="VBox"]
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="MaintenanceButton" type="Button" parent="VBox"]
+layout_mode = 2
+text = "Ремонт"

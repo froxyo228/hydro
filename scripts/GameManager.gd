@@ -26,12 +26,17 @@ enum GameState {
 
 var current_level: Node = null
 var built_dams: Array[Dam] = []
+var economic_system = null
 
 func _ready():
 	# Подключаемся к сигналам уровня
 	if get_tree().get_first_node_in_group("level"):
 		current_level = get_tree().get_first_node_in_group("level")
 		current_level.connect("survey_completed", _on_survey_completed)
+	
+	# Подключаемся к экономической системе
+	await get_tree().process_frame
+	economic_system = get_tree().get_first_node_in_group("economic_system")
 
 func change_state(new_state: GameState):
 	current_state = new_state

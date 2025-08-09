@@ -75,7 +75,13 @@ func calculate_power_output() -> float:
 	# Учитываем структурную целостность
 	var efficiency = structural_integrity / 100.0
 	
-	return base_power * efficiency
+	# Учитываем поток реки
+	var river_system = get_tree().get_first_node_in_group("river_system")
+	var flow_coefficient = 1.0
+	if river_system:
+		flow_coefficient = river_system.get_power_coefficient()
+	
+	return base_power * efficiency * flow_coefficient
 
 func _update_dam_status():
 	if current_status == DamStatus.UNDER_CONSTRUCTION:
@@ -104,6 +110,11 @@ func _update_dam_status():
 	if current_status == DamStatus.OPERATIONAL:
 		power_output = calculate_power_output()
 		power_generated.emit(power_output)
+		
+		# Добавляем мощность в экономическую систему
+		var economic_system = get_tree().get_first_node_in_group("economic_system")
+		if economic_system:
+			economic_system.add_power_generation(power_output)
 	
 	update_visual_status()
 

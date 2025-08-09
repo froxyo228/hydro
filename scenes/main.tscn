@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://c5q6uqyl788p2"]
+[gd_scene load_steps=5 format=3 uid="uid://c5q6uqyl788p2"]
 
 [ext_resource type="Script" uid="uid://bd1kdxitlafaj" path="res://scripts/GameManager.gd" id="1_o5qli"]
 [ext_resource type="PackedScene" uid="uid://bwgpspjbsngii" path="res://scenes/level.tscn" id="2_sugp2"]
-[ext_resource type="PackedScene" uid="uid://bbyblk6y7jv7q" path="res://scenes/hud.tscn" id="3_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://eai4j8k7xpqr" path="res://scenes/AdvancedHUD.tscn" id="3_advanced_hud"]
+[ext_resource type="Script" uid="uid://0q2kpns4vibu" path="res://scripts/TutorialSystem.gd" id="4_tutorial"]
 
 [node name="Main" type="Node"]
 
@@ -11,4 +12,13 @@ script = ExtResource("1_o5qli")
 
 [node name="Level" parent="." instance=ExtResource("2_sugp2")]
 
-[node name="HUD" parent="." instance=ExtResource("3_jyhfs")]
+[node name="AdvancedHUD" parent="." instance=ExtResource("3_advanced_hud")]
+
+[node name="TutorialSystem" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_tutorial")

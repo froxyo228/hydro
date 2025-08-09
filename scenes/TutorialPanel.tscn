@@ -1,0 +1,60 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8h3lam4xpqr"]
+
+[ext_resource type="Script" uid="uid://0q2kpns4vibu" path="res://scripts/TutorialSystem.gd" id="1_tutorial"]
+
+[node name="TutorialSystem" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tutorial")
+
+[node name="TutorialPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -200.0
+offset_right = 300.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="TutorialPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StepTitle" type="Label" parent="TutorialPanel/VBox"]
+layout_mode = 2
+text = "Заголовок шага"
+horizontal_alignment = 1
+
+[node name="StepDescription" type="RichTextLabel" parent="TutorialPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Описание текущего шага обучения"
+
+[node name="ButtonContainer" type="HBoxContainer" parent="TutorialPanel/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="NextButton" type="Button" parent="TutorialPanel/VBox/ButtonContainer"]
+layout_mode = 2
+text = "Далее"
+
+[node name="SkipButton" type="Button" parent="TutorialPanel/VBox/ButtonContainer"]
+layout_mode = 2
+text = "Пропустить"

@@ -11,10 +11,11 @@ config_version=5
 [application]
 
 config/name="HydroSim2.0"
-run/main_scene="uid://c5q6uqyl788p2"
+run/main_scene="res://scenes/MainMenu.tscn"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 GameManager="*res://scripts/GameManager.gd"
+ConfigManager="*res://scripts/ConfigManager.gd"

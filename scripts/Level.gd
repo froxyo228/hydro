@@ -10,6 +10,7 @@ signal survey_completed
 func _ready():
 	add_to_group("level")
 	generate_build_zones()
+	setup_systems()
 
 func generate_build_zones():
 	# Создаем зоны строительства вдоль реки
@@ -29,3 +30,21 @@ func generate_build_zones():
 		
 		zone.add_to_group("build_zones")
 		river.add_child(zone)
+
+func setup_systems():
+	# Создаем и добавляем новые системы
+	var river_system = preload("res://scripts/RiverSystem.gd").new()
+	add_child(river_system)
+	
+	var weather_system = preload("res://scripts/WeatherSystem.gd").new()
+	add_child(weather_system)
+	
+	var event_system = preload("res://scripts/EventSystem.gd").new()
+	add_child(event_system)
+	
+	var economic_system = preload("res://scripts/EconomicSystem.gd").new()
+	economic_system.add_to_group("economic_system")
+	add_child(economic_system)
+	
+	var save_system = preload("res://scripts/SaveSystem.gd").new()
+	add_child(save_system)
