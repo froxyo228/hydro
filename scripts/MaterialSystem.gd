@@ -1,5 +1,4 @@
 # ========== MaterialSystem.gd ==========
-class_name MaterialSystem
 extends Node
 
 # [Cursor] Новые типы материалов с базовыми прочностями
@@ -83,4 +82,7 @@ func get_material(type: MaterialType) -> DamMaterial:
 	return available_materials.get(type)
 
 func get_all_materials() -> Array[DamMaterial]:
-	return available_materials.values()
+	var out: Array[DamMaterial] = []
+	for v in available_materials.values():
+		out.append(v)
+	return out

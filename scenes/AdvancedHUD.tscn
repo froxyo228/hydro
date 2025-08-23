@@ -65,27 +65,27 @@ text = "Геологическая разведка"
 layout_mode = 2
 text = "Построить плотину"
 
-	[node name="MaterialPanel" type="VBoxContainer" parent="MainInterface/LeftPanel"]
-	layout_mode = 2
+[node name="MaterialPanel" type="VBoxContainer" parent="MainInterface/LeftPanel"]
+layout_mode = 2
 
-	[node name="MaterialLabel" type="Label" parent="MainInterface/LeftPanel/MaterialPanel"]
-	layout_mode = 2
-	text = "Материал:"
+[node name="MaterialLabel" type="Label" parent="MainInterface/LeftPanel/MaterialPanel"]
+layout_mode = 2
+text = "Материал:"
 
-	[node name="MaterialOption" type="OptionButton" parent="MainInterface/LeftPanel/MaterialPanel"]
-	layout_mode = 2
+[node name="MaterialOption" type="OptionButton" parent="MainInterface/LeftPanel/MaterialPanel"]
+layout_mode = 2
 
-	[node name="StrengthPanel" type="VBoxContainer" parent="MainInterface/LeftPanel"]
-	layout_mode = 2
+[node name="StrengthPanel" type="VBoxContainer" parent="MainInterface/LeftPanel"]
+layout_mode = 2
 
-	[node name="CurrentStrengthLabel" type="Label" parent="MainInterface/LeftPanel/StrengthPanel"]
-	layout_mode = 2
-	text = "Текущая прочность: 0 ед."
+[node name="CurrentStrengthLabel" type="Label" parent="MainInterface/LeftPanel/StrengthPanel"]
+layout_mode = 2
+text = "Текущая прочность: 0 ед."
 
-	[node name="PlannedStrengthLabel" type="Label" parent="MainInterface/LeftPanel/StrengthPanel"]
-	layout_mode = 2
-	text = "Планируемая прочность: 0 ед."
-	visible = false
+[node name="PlannedStrengthLabel" type="Label" parent="MainInterface/LeftPanel/StrengthPanel"]
+visible = false
+layout_mode = 2
+text = "Планируемая прочность: 0 ед."
 
 [node name="RightPanel" type="VBoxContainer" parent="MainInterface"]
 layout_mode = 1

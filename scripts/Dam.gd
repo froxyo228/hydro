@@ -185,9 +185,9 @@ func update_visual_status():
 	var material_name = "Неизвестно"
 	var material_system = get_tree().get_first_node_in_group("material_system")
 	if material_system:
-		var dam_material_obj = material_system.get_material(material_type)
-		if dam_material_obj:
-			material_name = dam_material_obj.name
+		var material_obj = material_system.get_material(material_type)
+		if material_obj:
+			material_name = material_obj.name
 	
 	match current_status:
 		DamStatus.UNDER_CONSTRUCTION:

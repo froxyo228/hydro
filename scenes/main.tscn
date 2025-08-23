@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://c5q6uqyl788p2"]
+[gd_scene load_steps=8 format=3 uid="uid://c5q6uqyl788p2"]
 
 [ext_resource type="Script" uid="uid://bd1kdxitlafaj" path="res://scripts/GameManager.gd" id="1_o5qli"]
 [ext_resource type="PackedScene" uid="uid://bwgpspjbsngii" path="res://scenes/level.tscn" id="2_sugp2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://0q2kpns4vibu" path="res://scripts/TutorialSystem.gd" id="4_tutorial"]
 [ext_resource type="PackedScene" uid="uid://dam_preview_uid" path="res://scenes/build/DamPreview.tscn" id="5_dam_preview"]
 [ext_resource type="PackedScene" uid="uid://pause_menu_uid" path="res://scenes/ui/PauseMenu.tscn" id="6_pause_menu"]
+[ext_resource type="Script" path="res://scripts/debug/SystemDiagnostics.gd" id="7_diagnostics"]
 
 [node name="Main" type="Node"]
 
@@ -28,3 +29,6 @@ grow_vertical = 2
 [node name="DamPreview" parent="." instance=ExtResource("5_dam_preview")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("6_pause_menu")]
+
+[node name="SystemDiagnostics" type="Node" parent="."]
+script = ExtResource("7_diagnostics")

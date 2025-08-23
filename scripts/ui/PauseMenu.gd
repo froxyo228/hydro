@@ -15,6 +15,8 @@ var hud: Node = null
 func _ready():
 	# [Cursor] Изначально скрываем меню
 	visible = false
+	# [Cursor] Устанавливаем процесс-режим, чтобы меню работало во время паузы
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# [Cursor] Подключаем кнопки
 	if continue_button:
@@ -84,18 +86,18 @@ func _on_exit_pressed():
 # [Cursor] Показать уведомление о сохранении/загрузке
 func show_save_notification(message: String):
 	# [Cursor] Создаем временное уведомление
-	var notification = Label.new()
-	notification.text = message
-	notification.add_theme_color_override("font_color", Color.WHITE)
-	notification.add_theme_font_size_override("font_size", 24)
-	notification.position = Vector2(400, 300)
-	add_child(notification)
+	var save_notification = Label.new()
+	save_notification.text = message
+	save_notification.add_theme_color_override("font_color", Color.WHITE)
+	save_notification.add_theme_font_size_override("font_size", 24)
+	save_notification.position = Vector2(400, 300)
+	add_child(save_notification)
 	
 	# [Cursor] Удаляем через 2 секунды
 	var timer = Timer.new()
 	timer.wait_time = 2.0
 	timer.one_shot = true
-	timer.timeout.connect(func(): notification.queue_free())
+	timer.timeout.connect(func(): save_notification.queue_free())
 	add_child(timer)
 	timer.start()
 

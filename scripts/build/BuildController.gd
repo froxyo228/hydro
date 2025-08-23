@@ -6,18 +6,18 @@ enum State { IDLE, PREVIEW, CONFIRM, CANCEL }
 
 # [Cursor] Текущее состояние и выбранный материал
 var current_state: State = State.IDLE
-var selected_material: MaterialSystem.MaterialType = MaterialSystem.MaterialType.CONCRETE
+var selected_material: int = 4  # CONCRETE
 var preview_position: Vector2 = Vector2.ZERO
 
 # [Cursor] Сигналы для HUD
-signal preview_moved(position: Vector2, material: MaterialSystem.MaterialType)
-signal preview_started(material: MaterialSystem.MaterialType)
+signal preview_moved(position: Vector2, material: int)
+signal preview_started(material: int)
 signal preview_ended()
-signal build_confirmed(position: Vector2, material: MaterialSystem.MaterialType)
+signal build_confirmed(position: Vector2, material: int)
 
 # [Cursor] Ссылки на системы
 var geo_data: Node = null
-var material_system: MaterialSystem = null
+var material_system = null
 
 func _ready():
 	add_to_group("build_controller")
@@ -27,11 +27,16 @@ func _ready():
 	material_system = get_tree().get_first_node_in_group("material_system")
 
 # [Cursor] Начать превью с выбранным материалом
-func start_preview(material: MaterialSystem.MaterialType):
+func start_preview(material: int):
 	selected_material = material
 	current_state = State.PREVIEW
 	preview_started.emit(material)
-	print("[Cursor] Превью начато с материалом: ", material_system.get_material(material).name)
+	var material_name = "Unknown"
+	if material_system:
+		var mat = material_system.get_material(material)
+		if mat:
+			material_name = mat.name
+	print("[Build] Preview started with material: ", material_name)
 
 # [Cursor] Обновить позицию превью (вызывается из DamPreview)
 func update_preview_position(position: Vector2):
@@ -44,6 +49,10 @@ func update_preview_position(position: Vector2):
 	
 	# [Cursor] Эмитим сигнал для HUD
 	preview_moved.emit(valid_position, selected_material)
+	
+	# [Cursor] Логируем движение превью
+	var planned_strength = get_planned_strength(valid_position)
+	print("[Build] Preview at: ", valid_position, "; planned=", int(planned_strength))
 
 # [Cursor] Получить валидную позицию для строительства
 func get_valid_build_position(target_position: Vector2) -> Vector2:
@@ -67,7 +76,7 @@ func confirm_build() -> bool:
 	
 	current_state = State.CONFIRM
 	build_confirmed.emit(preview_position, selected_material)
-	print("[Cursor] Строительство подтверждено в позиции: ", preview_position)
+	print("[Build] Confirmed at: ", preview_position)
 	
 	# [Cursor] Сбрасываем состояние
 	current_state = State.IDLE

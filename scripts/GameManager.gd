@@ -167,6 +167,16 @@ func build_dam_with_material(build_zone: BuildZone, material: int) -> bool:
 	# Запускаем строительство (можно добавить анимацию/таймер)
 	await get_tree().create_timer(2.0).timeout
 	
+	# [Cursor] Занимаем зону после успешного строительства
+	if build_zone and build_zone.has_method("occupy"):
+		build_zone.occupy()
+		print("[Build] Зона ", build_zone.zone_id, " занята")
+	elif build_zone:
+		build_zone.is_occupied = true
+		if build_zone.has_method("update_visual"):
+			build_zone.update_visual()
+		print("[Build] Зона ", build_zone.zone_id, " помечена как занятая")
+	
 	change_state(GameState.OPERATING)
 	dam.start_operation()
 	

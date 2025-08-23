@@ -54,9 +54,9 @@ func update_preview_text(preview_position: Vector2):
 	# [Cursor] Получаем название материала
 	var material_system = get_tree().get_first_node_in_group("material_system")
 	if material_system:
-		var dam_material_obj = material_system.get_material(build_controller.selected_material)
-		if dam_material_obj:
-			material_name = dam_material_obj.name
+		var material_obj = material_system.get_material(build_controller.selected_material)
+		if material_obj:
+			material_name = material_obj.name
 	
 	# [Cursor] Формируем текст превью
 	var preview_text = "{} - {} ед.".format(material_name, str(int(planned_strength)))
@@ -65,12 +65,15 @@ func update_preview_text(preview_position: Vector2):
 # [Cursor] Показать превью
 func show_preview():
 	visible = true
-	print("[Cursor] Превью показано")
+	# [Cursor] Полупрозрачность для превью
+	if preview_sprite:
+		preview_sprite.modulate = Color(0.5, 0.8, 1.0, 0.6)
+	print("[Build] DamPreview показан")
 
 # [Cursor] Скрыть превью
 func hide_preview():
 	visible = false
-	print("[Cursor] Превью скрыто")
+	print("[Build] DamPreview скрыт")
 
 # [Cursor] Обработка ввода для подтверждения/отмены
 func _input(event):

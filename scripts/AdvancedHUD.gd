@@ -117,27 +117,36 @@ func _on_material_selected(index: int):
 
 func _on_survey_pressed():
 	if GameManager and GameManager.start_survey():
+		print("[Survey] Начата георазведка")
 		for zone in get_tree().get_nodes_in_group("build_zones"):
 			zone.perform_survey()
+		
+		# [Cursor] Авто-возврат из SURVEYING в PLANNING через 2 секунды
+		await get_tree().create_timer(2.0).timeout
+		print("[Survey] Завершена георазведка, возврат в PLANNING")
+		if GameManager:
+			GameManager.change_state(GameManager.GameState.PLANNING)
 
 func _on_build_pressed():
-	# [Cursor] Запускаем превью строительства через BuildController
-	var build_controller = get_tree().get_first_node_in_group("build_controller")
-	if build_controller:
-		build_controller.start_preview(selected_material)
-		
-		# [Cursor] Показываем DamPreview
-		var dam_preview = get_tree().get_first_node_in_group("dam_preview")
-		if dam_preview and dam_preview.has_method("show_preview"):
-			dam_preview.show_preview()
+	var bc = get_tree().get_first_node_in_group("build_controller")
+	if not bc:
+		push_warning("[HUD] BuildController not found")
+		return
+	
+	if bc.current_state == 1: # PREVIEW state
+		# [Cursor] Подтверждаем строительство
+		print("[HUD] Подтверждение строительства")
+		if bc.can_build_at(bc.preview_position):
+			bc.confirm_build()
+		else:
+			print("[HUD] Нельзя строить в этой позиции")
 	else:
-		# [Cursor] Fallback к старому методу
-		if selected_build_zone and GameManager:
-			var skip_survey = not selected_build_zone.is_surveyed
-			if await GameManager.build_dam(selected_build_zone, skip_survey):
-				selected_build_zone.occupy()
-				selected_build_zone = null
-				update_button_states()
+		# [Cursor] Запускаем превью
+		print("[HUD] Запуск превью строительства")
+		bc.start_preview(selected_material)
+		var preview = get_tree().get_first_node_in_group("dam_preview")
+		if preview:
+			preview.show_preview()
 
 func _on_dam_built(_location):
 	update_dam_list()
@@ -212,7 +221,13 @@ func update_button_states():
 	
 	if GameManager:
 		can_survey = GameManager.current_state == GameManager.GameState.PLANNING and GameManager.can_afford(GameManager.survey_cost)
-		can_build = selected_build_zone != null and not selected_build_zone.is_occupied and GameManager.current_state == GameManager.GameState.PLANNING
+		
+		# [Cursor] Кнопка "построить" активна в PLANNING, если есть хотя бы одна свободная зона
+		if GameManager.current_state == GameManager.GameState.PLANNING:
+			for zone in get_tree().get_nodes_in_group("build_zones"):
+				if not zone.is_occupied:
+					can_build = true
+					break
 	
 	if survey_button:
 		survey_button.disabled = not can_survey
@@ -246,13 +261,16 @@ func _on_preview_moved(position: Vector2, _material: int):
 			planned_strength_label.text = "Планируемая прочность: {} ед.".format(int(planned_strength))
 
 func _on_preview_ended():
-	print("Превью завершено")
+	print("[Build] Превью завершено")
 	# [Cursor] Скрываем планируемую прочность
 	if planned_strength_label:
 		planned_strength_label.visible = false
-	# [Cursor] Деактивируем кнопку строительства
-	if build_button:
-		build_button.disabled = true
+	# [Cursor] Скрываем призрак
+	var preview = get_tree().get_first_node_in_group("dam_preview")
+	if preview:
+		preview.hide_preview()
+	# [Cursor] Обновляем кнопки
+	update_button_states()
 
 # [Cursor] Метод для обновления HUD после загрузки
 func refresh():
