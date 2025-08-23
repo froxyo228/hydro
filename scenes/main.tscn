@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://c5q6uqyl788p2"]
+[gd_scene load_steps=7 format=3 uid="uid://c5q6uqyl788p2"]
 
 [ext_resource type="Script" uid="uid://bd1kdxitlafaj" path="res://scripts/GameManager.gd" id="1_o5qli"]
 [ext_resource type="PackedScene" uid="uid://bwgpspjbsngii" path="res://scenes/level.tscn" id="2_sugp2"]
 [ext_resource type="PackedScene" uid="uid://eai4j8k7xpqr" path="res://scenes/AdvancedHUD.tscn" id="3_advanced_hud"]
 [ext_resource type="Script" uid="uid://0q2kpns4vibu" path="res://scripts/TutorialSystem.gd" id="4_tutorial"]
+[ext_resource type="PackedScene" uid="uid://dam_preview_uid" path="res://scenes/build/DamPreview.tscn" id="5_dam_preview"]
+[ext_resource type="PackedScene" uid="uid://pause_menu_uid" path="res://scenes/ui/PauseMenu.tscn" id="6_pause_menu"]
 
 [node name="Main" type="Node"]
 
@@ -21,4 +23,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("4_tutorial")
+	script = ExtResource("4_tutorial")
+
+[node name="DamPreview" parent="." instance=ExtResource("5_dam_preview")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("6_pause_menu")]

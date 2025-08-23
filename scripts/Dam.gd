@@ -22,9 +22,16 @@ var structural_integrity: float = 100.0  # 0-100%
 var power_output: float = 0.0
 var operational_time: float = 0.0
 
+# [Cursor] Новые поля для материалов и прочности
+var material_type: int = 0  # MaterialSystem.MaterialType
+var current_strength: float = 0.0  # Текущая прочность в единицах
+var max_strength: float = 0.0  # Максимальная прочность при постройке
+
 # Параметры деградации
 var base_degradation_rate: float = 0.1  # % в секунду
 var failure_chance_multiplier: float = 1.0
+# [Cursor] Ускоренная деградация для неразведанных плотин
+var unsurveyed_decay_multiplier: float = 2.0
 
 # Визуальные компоненты
 var sprite: Sprite2D
@@ -40,15 +47,36 @@ func _ready():
 	timer.autostart = true
 	add_child(timer)
 
-func initialize(zone: BuildZone, surveyed: bool):
+func initialize(zone: BuildZone, surveyed: bool, dam_material: int = 0):
 	build_zone = zone
 	was_surveyed = surveyed
+	material_type = dam_material
 	global_position = zone.global_position
 	
-	# Если не было георазведки, увеличиваем шанс проблем
+	# [Cursor] Рассчитываем начальную прочность на основе материала
+	var material_system = get_tree().get_first_node_in_group("material_system")
+	if material_system:
+		var base_strength = material_system.get_base_strength(material_type)
+		
+		# [Cursor] Если есть георазведка - учитываем коэффициент почвы
+		if was_surveyed and zone.has_method("get_geological_stability"):
+			var soil_coeff = zone.geological_stability
+			max_strength = base_strength * soil_coeff
+		else:
+			max_strength = base_strength
+		
+		current_strength = max_strength
+	else:
+		# [Cursor] Fallback если система не готова
+		max_strength = 50.0
+		current_strength = max_strength
+	
+	# Если не было георазведки, увеличиваем деградацию
 	if not was_surveyed:
-		failure_chance_multiplier = 3.0
-		structural_integrity = randf_range(60.0, 90.0)  # Начинаем с пониженной прочности
+		failure_chance_multiplier = unsurveyed_decay_multiplier
+		# [Cursor] Дополнительный риск на нестабильной почве
+		if zone.geological_stability < 0.7:
+			failure_chance_multiplier *= 1.5
 
 func setup_visuals():
 	# Создаем спрайт плотины
@@ -89,12 +117,18 @@ func _update_dam_status():
 	
 	operational_time += 1.0
 	
-	# Деградация структурной целостности
-	var degradation = base_degradation_rate * failure_chance_multiplier
-	structural_integrity -= degradation
+	# [Cursor] Деградация на основе прочности
+	var strength_degradation = 0.5 * failure_chance_multiplier  # единиц прочности в секунду
+	current_strength -= strength_degradation
+	
+	# [Cursor] Обновляем structural_integrity на основе прочности
+	if max_strength > 0:
+		structural_integrity = (current_strength / max_strength) * 100.0
+	else:
+		structural_integrity = 0.0
 	
 	# Проверяем критические состояния
-	if structural_integrity <= 0:
+	if current_strength <= 0 or structural_integrity <= 0:
 		trigger_dam_failure()
 	elif structural_integrity <= 30:
 		if current_status != DamStatus.CRITICAL_FAILURE:
@@ -147,19 +181,27 @@ func perform_maintenance() -> int:
 	return maintenance_cost
 
 func update_visual_status():
+	# [Cursor] Получаем название материала для отображения
+	var material_name = "Неизвестно"
+	var material_system = get_tree().get_first_node_in_group("material_system")
+	if material_system:
+		var dam_material_obj = material_system.get_material(material_type)
+		if dam_material_obj:
+			material_name = dam_material_obj.name
+	
 	match current_status:
 		DamStatus.UNDER_CONSTRUCTION:
-			status_label.text = "Строительство"
+			status_label.text = "Строительство\n{}".format([material_name])
 			sprite.modulate = Color.GRAY
 		DamStatus.OPERATIONAL:
-			status_label.text = "Работает ({}%)".format(structural_integrity)
+			status_label.text = "{}\nПрочность: {}/{}".format([material_name, int(current_strength), int(max_strength)])
 			sprite.modulate = Color.GREEN
 		DamStatus.MAINTENANCE_NEEDED:
-			status_label.text = "Ремонт! ({}%)".format(structural_integrity)
+			status_label.text = "{}\nРемонт! {}/{}".format([material_name, int(current_strength), int(max_strength)])
 			sprite.modulate = Color.YELLOW
 		DamStatus.CRITICAL_FAILURE:
-			status_label.text = "КРИТИЧНО! ({}%)".format(structural_integrity)
+			status_label.text = "{}\nКРИТИЧНО! {}/{}".format([material_name, int(current_strength), int(max_strength)])
 			sprite.modulate = Color.ORANGE
 		DamStatus.DESTROYED:
-			status_label.text = "РАЗРУШЕНА"
+			status_label.text = "{}\nРАЗРУШЕНА".format([material_name])
 			sprite.modulate = Color.RED

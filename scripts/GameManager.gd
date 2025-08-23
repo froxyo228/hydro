@@ -27,6 +27,9 @@ enum GameState {
 var current_level: Node = null
 var built_dams: Array[Dam] = []
 var economic_system = null
+# [Cursor] Ссылки на новые системы
+var river_system = null
+var build_controller = null
 
 func _ready():
 	# Подключаемся к сигналам уровня
@@ -34,9 +37,15 @@ func _ready():
 		current_level = get_tree().get_first_node_in_group("level")
 		current_level.connect("survey_completed", _on_survey_completed)
 	
-	# Подключаемся к экономической системе
+	# Подключаемся к системам
 	await get_tree().process_frame
 	economic_system = get_tree().get_first_node_in_group("economic_system")
+	river_system = get_tree().get_first_node_in_group("river_system")
+	build_controller = get_tree().get_first_node_in_group("build_controller")
+	
+	# [Cursor] Подключаемся к сигналам BuildController
+	if build_controller:
+		build_controller.build_confirmed.connect(_on_build_confirmed)
 
 func change_state(new_state: GameState):
 	current_state = new_state
@@ -105,3 +114,64 @@ func calculate_construction_cost(build_zone: BuildZone) -> int:
 	var cost = base_construction_cost
 	cost += build_zone.difficulty_modifier * 10000
 	return cost
+
+# [Cursor] Новые методы для работы с BuildController
+func _on_build_confirmed(position: Vector2, material: int):
+	print("[Cursor] Строительство подтверждено в позиции: ", position, " материал: ", material)
+	
+	# [Cursor] Находим ближайшую BuildZone
+	var build_zone = find_build_zone_at_position(position)
+	if not build_zone:
+		print("[Cursor] Ошибка: не найдена BuildZone в позиции")
+		return
+	
+	# [Cursor] Строим плотину с выбранным материалом
+	build_dam_with_material(build_zone, material)
+
+func find_build_zone_at_position(position: Vector2) -> BuildZone:
+	var build_zones = get_tree().get_nodes_in_group("build_zones")
+	var min_distance = 100.0  # Максимальное расстояние для поиска
+	var closest_zone = null
+	
+	for zone in build_zones:
+		var distance = position.distance_to(zone.global_position)
+		if distance < min_distance:
+			min_distance = distance
+			closest_zone = zone
+	
+	return closest_zone
+
+func build_dam_with_material(build_zone: BuildZone, material: int) -> bool:
+	if current_state != GameState.PLANNING:
+		return false
+	
+	var construction_cost = calculate_construction_cost(build_zone)
+	
+	if not spend_money(construction_cost):
+		print("[Cursor] Недостаточно денег для строительства")
+		return false
+	
+	change_state(GameState.BUILDING)
+	
+	# [Cursor] Создаем новую плотину с материалом
+	var dam = Dam.new()
+	dam.initialize(build_zone, build_zone.is_surveyed, material)
+	built_dams.append(dam)
+	
+	# Добавляем в сцену
+	if current_level:
+		current_level.add_child(dam)
+	
+	dam_built.emit(build_zone.global_position)
+	
+	# Запускаем строительство (можно добавить анимацию/таймер)
+	await get_tree().create_timer(2.0).timeout
+	
+	change_state(GameState.OPERATING)
+	dam.start_operation()
+	
+	return true
+
+# [Cursor] API для доступа к RiverSystem из HUD
+func get_river_system():
+	return river_system

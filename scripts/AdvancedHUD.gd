@@ -20,12 +20,22 @@ var dam_info_widgets: Array = []
 @onready var event_title = $EventDialog/VBox/EventTitle
 @onready var event_description = $EventDialog/VBox/EventDescription
 @onready var choices_container = $EventDialog/VBox/ChoicesContainer
+# [Cursor] Новые лейблы для прочности
+@onready var current_strength_label = $MainInterface/LeftPanel/StrengthPanel/CurrentStrengthLabel
+@onready var planned_strength_label = $MainInterface/LeftPanel/StrengthPanel/PlannedStrengthLabel
 
 func _ready():
 	add_to_group("hud")
 	setup_connections()
 	setup_material_options()
 	update_all_ui()
+	# [Cursor] Подключаемся к BuildController для превью
+	await get_tree().process_frame
+	var build_controller = get_tree().get_first_node_in_group("build_controller")
+	if build_controller:
+		build_controller.preview_moved.connect(_on_preview_moved)
+		build_controller.preview_started.connect(_on_preview_started)
+		build_controller.preview_ended.connect(_on_preview_ended)
 
 func setup_connections():
 	if GameManager:
@@ -62,10 +72,18 @@ func setup_connections():
 func setup_material_options():
 	if material_option:
 		material_option.clear()
-		material_option.add_item("Бетон")
-		material_option.add_item("Сталь")
-		material_option.add_item("Железобетон")
-		material_option.add_item("Композит")
+		# [Cursor] Используем новые материалы из MaterialSystem
+		var material_system = get_tree().get_first_node_in_group("material_system")
+		if material_system:
+			for material in material_system.get_all_materials():
+				material_option.add_item(material.name)
+		else:
+			# [Cursor] Fallback если система не готова
+			material_option.add_item("Дерево")
+			material_option.add_item("Земляная насыпь")
+			material_option.add_item("Камень")
+			material_option.add_item("Сталь")
+			material_option.add_item("Бетон")
 
 func _on_resources_changed(money: int, reputation: int):
 	if money_label:
@@ -103,12 +121,23 @@ func _on_survey_pressed():
 			zone.perform_survey()
 
 func _on_build_pressed():
-	if selected_build_zone and GameManager:
-		var skip_survey = not selected_build_zone.is_surveyed
-		if await GameManager.build_dam(selected_build_zone, skip_survey):
-			selected_build_zone.occupy()
-			selected_build_zone = null
-			update_button_states()
+	# [Cursor] Запускаем превью строительства через BuildController
+	var build_controller = get_tree().get_first_node_in_group("build_controller")
+	if build_controller:
+		build_controller.start_preview(selected_material)
+		
+		# [Cursor] Показываем DamPreview
+		var dam_preview = get_tree().get_first_node_in_group("dam_preview")
+		if dam_preview and dam_preview.has_method("show_preview"):
+			dam_preview.show_preview()
+	else:
+		# [Cursor] Fallback к старому методу
+		if selected_build_zone and GameManager:
+			var skip_survey = not selected_build_zone.is_surveyed
+			if await GameManager.build_dam(selected_build_zone, skip_survey):
+				selected_build_zone.occupy()
+				selected_build_zone = null
+				update_button_states()
 
 func _on_dam_built(_location):
 	update_dam_list()
@@ -197,3 +226,35 @@ func update_all_ui():
 	update_button_states()
 	update_dam_list()
 	update_total_power()
+
+# [Cursor] Методы для работы с превью
+func _on_preview_started(material: int):
+	print("Превью начато с материалом: ", material)
+	# [Cursor] Показываем планируемую прочность
+	if planned_strength_label:
+		planned_strength_label.visible = true
+	# [Cursor] Активируем кнопку строительства
+	if build_button:
+		build_button.disabled = false
+
+func _on_preview_moved(position: Vector2, _material: int):
+	# [Cursor] Обновляем планируемую прочность
+	if planned_strength_label:
+		var build_controller = get_tree().get_first_node_in_group("build_controller")
+		if build_controller:
+			var planned_strength = build_controller.get_planned_strength(position)
+			planned_strength_label.text = "Планируемая прочность: {} ед.".format(int(planned_strength))
+
+func _on_preview_ended():
+	print("Превью завершено")
+	# [Cursor] Скрываем планируемую прочность
+	if planned_strength_label:
+		planned_strength_label.visible = false
+	# [Cursor] Деактивируем кнопку строительства
+	if build_button:
+		build_button.disabled = true
+
+# [Cursor] Метод для обновления HUD после загрузки
+func refresh():
+	update_all_ui()
+	print("HUD обновлен")

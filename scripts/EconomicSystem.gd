@@ -18,6 +18,7 @@ var total_power_generated: float = 0.0
 var monthly_expenses: float = 5000
 
 func _ready():
+	add_to_group("economic_system")
 	var timer = Timer.new()
 	timer.wait_time = 30.0
 	timer.timeout.connect(_monthly_calculation)

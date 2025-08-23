@@ -1,8 +1,11 @@
 # ========== SaveSystem.gd ==========
-class_name SaveSystem
+# [Cursor] Система сохранения/загрузки
 extends Node
 
 const SAVE_FILE = "user://hydrosim_save.dat"
+
+func _ready():
+	add_to_group("save_system")
 
 func save_game() -> bool:
 	var save_file = FileAccess.open(SAVE_FILE, FileAccess.WRITE)
@@ -23,7 +26,11 @@ func save_game() -> bool:
 				"position": var_to_str(dam.global_position),
 				"structural_integrity": dam.structural_integrity,
 				"was_surveyed": dam.was_surveyed,
-				"operational_time": dam.operational_time
+				"operational_time": dam.operational_time,
+				# [Cursor] Сохраняем новые поля
+				"material_type": dam.material_type,
+				"current_strength": dam.current_strength,
+				"max_strength": dam.max_strength
 			})
 	save_data["build_zones"] = []
 	for zone in get_tree().get_nodes_in_group("build_zones"):
@@ -33,6 +40,14 @@ func save_game() -> bool:
 			"is_occupied": zone.is_occupied,
 			"is_safe": zone.is_safe
 		})
+	# [Cursor] Сохраняем состояние RiverSystem
+	save_data["river_system"] = {}
+	var river_system = get_tree().get_first_node_in_group("river_system")
+	if river_system:
+		save_data["river_system"]["current_flow"] = river_system.current_flow
+		save_data["river_system"]["weather_factor"] = river_system.weather_factor
+		save_data["river_system"]["time_elapsed"] = river_system.time_elapsed
+	
 	save_data["timestamp"] = Time.get_unix_time_from_system()
 	save_file.store_string(JSON.stringify(save_data))
 	save_file.close()
@@ -70,6 +85,16 @@ func load_game() -> bool:
 			zone.is_occupied = zone_data.get("is_occupied", false)
 			zone.is_safe = zone_data.get("is_safe", false)
 			zone.update_visual()
+	
+	# [Cursor] Загружаем состояние RiverSystem
+	if save_data.has("river_system"):
+		var river_system = get_tree().get_first_node_in_group("river_system")
+		if river_system:
+			var rs_data = save_data["river_system"]
+			river_system.current_flow = rs_data.get("current_flow", 100.0)
+			river_system.weather_factor = rs_data.get("weather_factor", 1.0)
+			river_system.time_elapsed = rs_data.get("time_elapsed", 0.0)
+	
 	print("Игра загружена")
 	return true
 

@@ -2,7 +2,17 @@
 class_name MaterialSystem
 extends Node
 
-enum MaterialType { CONCRETE, STEEL, COMPOSITE, REINFORCED_CONCRETE }
+# [Cursor] Новые типы материалов с базовыми прочностями
+enum MaterialType { WOOD, EARTHFILL, STONE, STEEL, CONCRETE }
+
+# [Cursor] Базовые прочности (условные ед.)
+const BASE_STRENGTHS = {
+	MaterialType.WOOD: 10.0,
+	MaterialType.EARTHFILL: 30.0,
+	MaterialType.STONE: 50.0,
+	MaterialType.STEEL: 80.0,
+	MaterialType.CONCRETE: 100.0
+}
 
 class DamMaterial:
 	var type: MaterialType
@@ -15,44 +25,59 @@ class DamMaterial:
 var available_materials: Dictionary = {}
 
 func _ready():
+	add_to_group("material_system")
 	initialize_materials()
 
 func initialize_materials():
-	var concrete = DamMaterial.new()
-	concrete.type = MaterialType.CONCRETE
-	concrete.name = "Бетон"
-	concrete.cost_multiplier = 1.0
-	concrete.durability = 0.6
-	concrete.strength = 0.7
-	concrete.maintenance_cost = 0.3
-	available_materials[MaterialType.CONCRETE] = concrete
+	# [Cursor] Создаем новые материалы согласно требованиям
+	var wood = DamMaterial.new()
+	wood.type = MaterialType.WOOD
+	wood.name = "Дерево"
+	wood.cost_multiplier = 0.3
+	wood.durability = 0.3
+	wood.strength = 0.1
+	wood.maintenance_cost = 0.1
+	available_materials[MaterialType.WOOD] = wood
+
+	var earthfill = DamMaterial.new()
+	earthfill.type = MaterialType.EARTHFILL
+	earthfill.name = "Земляная насыпь"
+	earthfill.cost_multiplier = 0.5
+	earthfill.durability = 0.4
+	earthfill.strength = 0.3
+	earthfill.maintenance_cost = 0.2
+	available_materials[MaterialType.EARTHFILL] = earthfill
+
+	var stone = DamMaterial.new()
+	stone.type = MaterialType.STONE
+	stone.name = "Камень"
+	stone.cost_multiplier = 0.8
+	stone.durability = 0.6
+	stone.strength = 0.5
+	stone.maintenance_cost = 0.3
+	available_materials[MaterialType.STONE] = stone
 
 	var steel = DamMaterial.new()
 	steel.type = MaterialType.STEEL
 	steel.name = "Сталь"
 	steel.cost_multiplier = 1.5
 	steel.durability = 0.8
-	steel.strength = 0.9
+	steel.strength = 0.8
 	steel.maintenance_cost = 0.5
 	available_materials[MaterialType.STEEL] = steel
 
-	var composite = DamMaterial.new()
-	composite.type = MaterialType.COMPOSITE
-	composite.name = "Композитные материалы"
-	composite.cost_multiplier = 2.2
-	composite.durability = 0.95
-	composite.strength = 0.95
-	composite.maintenance_cost = 0.2
-	available_materials[MaterialType.COMPOSITE] = composite
+	var concrete = DamMaterial.new()
+	concrete.type = MaterialType.CONCRETE
+	concrete.name = "Бетон"
+	concrete.cost_multiplier = 1.0
+	concrete.durability = 0.7
+	concrete.strength = 1.0
+	concrete.maintenance_cost = 0.4
+	available_materials[MaterialType.CONCRETE] = concrete
 
-	var reinforced = DamMaterial.new()
-	reinforced.type = MaterialType.REINFORCED_CONCRETE
-	reinforced.name = "Железобетон"
-	reinforced.cost_multiplier = 1.3
-	reinforced.durability = 0.75
-	reinforced.strength = 0.8
-	reinforced.maintenance_cost = 0.25
-	available_materials[MaterialType.REINFORCED_CONCRETE] = reinforced
+# [Cursor] Публичный API для получения базовой прочности
+func get_base_strength(type: MaterialType) -> float:
+	return BASE_STRENGTHS.get(type, 50.0)
 
 func get_material(type: MaterialType) -> DamMaterial:
 	return available_materials.get(type)

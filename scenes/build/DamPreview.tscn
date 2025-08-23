@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://dam_preview_uid"]
+
+[ext_resource type="Script" path="res://scripts/build/DamPreview.gd" id="1_dam_preview"]
+
+[node name="DamPreview" type="Node2D"]
+script = ExtResource("1_dam_preview")
+
+[node name="PreviewSprite" type="Sprite2D" parent="."]
+modulate = Color(0.5, 0.8, 1.0, 0.6)
+texture = ExtResource("res://sprites/dam_placeholder.png")
+
+[node name="PreviewLabel" type="Label" parent="."]
+offset_left = -40.0
+offset_top = -60.0
+offset_right = 40.0
+offset_bottom = -40.0
+text = "Превью"
+horizontal_alignment = 1
+vertical_alignment = 1
