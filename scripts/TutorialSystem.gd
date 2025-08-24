@@ -18,19 +18,21 @@ var current_step: TutorialStep = TutorialStep.WELCOME
 var tutorial_active: bool = false
 var step_data: Dictionary = {}
 
-@onready var tutorial_panel = $TutorialPanel
-@onready var step_title = $TutorialPanel/VBox/StepTitle
-@onready var step_description = $TutorialPanel/VBox/StepDescription
-@onready var next_button = $TutorialPanel/VBox/ButtonContainer/NextButton
-@onready var skip_button = $TutorialPanel/VBox/ButtonContainer/SkipButton
+# Временно отключаем UI элементы для TutorialSystem
+# @onready var tutorial_panel = $TutorialPanel
+# @onready var step_title = $TutorialPanel/VBox/StepTitle
+# @onready var step_description = $TutorialPanel/VBox/StepDescription
+# @onready var next_button = $TutorialPanel/VBox/ButtonContainer/NextButton
+# @onready var skip_button = $TutorialPanel/VBox/ButtonContainer/SkipButton
 
 func _ready():
 	add_to_group("ui")
 	setup_tutorial_data()
-	if next_button:
-		next_button.pressed.connect(_on_next_pressed)
-	if skip_button:
-		skip_button.pressed.connect(_on_skip_pressed)
+	# Временно отключаем подключение кнопок
+	# if next_button:
+	# 	next_button.pressed.connect(_on_next_pressed)
+	# if skip_button:
+	# 	skip_button.pressed.connect(_on_skip_pressed)
 	visible = false
 
 func setup_tutorial_data():
@@ -71,13 +73,14 @@ func show_current_step():
 		return
 	
 	var data = step_data[current_step]
-	if step_title:
-		step_title.text = data.get("title", "")
-	if step_description:
-		step_description.text = data.get("description", "")
+	# Временно отключаем обновление UI
+	# if step_title:
+	# 	step_title.text = data.get("title", "")
+	# if step_description:
+	# 	step_description.text = data.get("description", "")
 	
-	if tutorial_panel:
-		tutorial_panel.visible = true
+	# if tutorial_panel:
+	# 	tutorial_panel.visible = true
 
 func _on_next_pressed():
 	tutorial_step_completed.emit(current_step)
@@ -114,8 +117,8 @@ func complete_tutorial():
 
 func hide_tutorial():
 	visible = false
-	if tutorial_panel:
-		tutorial_panel.visible = false
+	# if tutorial_panel:
+	# 	tutorial_panel.visible = false
 
 func show_step(step: TutorialStep):
 	current_step = step

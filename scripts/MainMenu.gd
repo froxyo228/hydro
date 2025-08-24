@@ -9,7 +9,7 @@ extends Control
 var save_system
 
 func _ready():
-	save_system = preload("res://scripts/SaveSystem.gd").new()
+	save_system = preload("res://scripts/systems/SaveSystem.gd").new()
 	add_child(save_system)
 	
 	setup_buttons()
@@ -61,6 +61,7 @@ func start_new_game():
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 func start_tutorial_game():
+	print("[MENU] Запуск игры с обучением")
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 	# Обучение запустится автоматически в Main сцене
 

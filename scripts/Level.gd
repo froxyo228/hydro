@@ -19,15 +19,15 @@ func generate_build_zones():
 	
 	# [Cursor] Предустановленные позиции зон для удобного тестирования
 	var zone_configs = [
-		{"id": "zone_1", "pos": Vector2(-200, 0), "power": 120.0, "stability": 0.8, "surveyed": false},
-		{"id": "zone_2", "pos": Vector2(0, -100), "power": 100.0, "stability": 0.9, "surveyed": true, "safe": true},
-		{"id": "zone_3", "pos": Vector2(200, 0), "power": 80.0, "stability": 0.6, "surveyed": false},
-		{"id": "zone_4", "pos": Vector2(0, 100), "power": 150.0, "stability": 0.4, "surveyed": true, "safe": false}
+		{"id": "zone_1", "pos": Vector2(-200, 0), "power": 120.0, "stability": 0.8, "surveyed": false, "safe": false},
+		{"id": "zone_2", "pos": Vector2(0, -100), "power": 100.0, "stability": 0.9, "surveyed": false, "safe": false},
+		{"id": "zone_3", "pos": Vector2(200, 0), "power": 80.0, "stability": 0.6, "surveyed": false, "safe": false},
+		{"id": "zone_4", "pos": Vector2(0, 100), "power": 150.0, "stability": 0.4, "surveyed": false, "safe": false}
 	]
 	
 	for i in range(min(zone_configs.size(), num_build_zones)):
 		var config = zone_configs[i]
-		var zone = preload("res://scenes/build_zone.tscn").instantiate()
+		var zone = preload("res://scenes/build/build_zone.tscn").instantiate()
 		zone.zone_id = config.id
 		zone.position = river_pos + config.pos  # Относительно реки
 		
@@ -43,11 +43,11 @@ func generate_build_zones():
 
 func setup_systems():
 	# [Cursor] Создаем и добавляем новые системы
-	var river_system = preload("res://scripts/RiverSystem.gd").new()
+	var river_system = preload("res://scripts/systems/RiverSystem.gd").new()
 	river_system.add_to_group("river_system")
 	add_child(river_system)
 	
-	var weather_system = preload("res://scripts/WeatherSystem.gd").new()
+	var weather_system = preload("res://scripts/systems/WeatherSystem.gd").new()
 	weather_system.add_to_group("weather_system")
 	add_child(weather_system)
 	
@@ -55,10 +55,10 @@ func setup_systems():
 	# var event_system = preload("res://scripts/EventSystem.gd").new()
 	# add_child(event_system)
 	
-	var economic_system = preload("res://scripts/EconomicSystem.gd").new()
+	var economic_system = preload("res://scripts/systems/EconomicSystem.gd").new()
 	economic_system.add_to_group("economic_system")
 	add_child(economic_system)
 	
-	var save_system = preload("res://scripts/SaveSystem.gd").new()
+	var save_system = preload("res://scripts/systems/SaveSystem.gd").new()
 	save_system.add_to_group("save_system")
 	add_child(save_system)

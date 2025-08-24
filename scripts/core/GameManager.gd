@@ -31,8 +31,11 @@ var build_controller
 func _ready():
 	print("[STATE] GameManager инициализирован")
 	
-	# Подключаемся к системам
+	# Ждем полной инициализации всех узлов
 	await get_tree().process_frame
+	await get_tree().process_frame  # Дополнительный фрейм для HUD
+	
+	print("[STATE] Начинаем подключение систем...")
 	setup_system_connections()
 
 ## Настройка подключений к другим системам
@@ -49,12 +52,46 @@ func setup_system_connections():
 	
 	# Подключаемся к HUD для получения запросов пользователя
 	var hud = get_tree().get_first_node_in_group("hud")
+	print("[STATE] Поиск HUD в группе 'hud'...")
 	if hud:
+		print("[STATE] HUD найден: ", hud.name)
 		if hud.has_signal("survey_requested"):
 			hud.survey_requested.connect(_on_survey_requested)
+			print("[STATE] Сигнал survey_requested подключен")
+		else:
+			print("[STATE] ОШИБКА: HUD не имеет сигнала survey_requested!")
+		
 		if hud.has_signal("build_requested"):
 			hud.build_requested.connect(_on_build_requested)
+			print("[STATE] Сигнал build_requested подключен")
+		else:
+			print("[STATE] ОШИБКА: HUD не имеет сигнала build_requested!")
+		
 		print("[STATE] HUD подключен")
+	else:
+		print("[STATE] ОШИБКА: HUD не найден в группе 'hud'!")
+		# Показываем все группы для отладки
+		var groups = get_tree().get_nodes_in_group("hud")
+		print("[STATE] Всего узлов в группе 'hud': ", groups.size())
+		for group in groups:
+			print("[STATE] Узел в группе 'hud': ", group.name, " (", group.get_class(), ")")
+		
+		# Попытка повторного поиска через 1 секунду
+		print("[STATE] Повторная попытка подключения к HUD через 1 секунду...")
+		await get_tree().create_timer(1.0).timeout
+		
+		hud = get_tree().get_first_node_in_group("hud")
+		if hud:
+			print("[STATE] HUD найден при повторной попытке: ", hud.name)
+			if hud.has_signal("survey_requested"):
+				hud.survey_requested.connect(_on_survey_requested)
+				print("[STATE] Сигнал survey_requested подключен (повторно)")
+			if hud.has_signal("build_requested"):
+				hud.build_requested.connect(_on_build_requested)
+				print("[STATE] Сигнал build_requested подключен (повторно)")
+			print("[STATE] HUD подключен (повторно)")
+		else:
+			print("[STATE] ОШИБКА: HUD так и не найден!")
 	
 	print("[STATE] Системы подключены")
 
@@ -89,9 +126,16 @@ func start_survey() -> bool:
 	change_state(GameState.SURVEYING)
 	
 	# Выполняем георазведку всех зон
-	for zone in get_tree().get_nodes_in_group("build_zones"):
+	var zones = get_tree().get_nodes_in_group("build_zones")
+	print("[SURVEY] Найдено зон для георазведки: ", zones.size())
+	
+	for zone in zones:
+		print("[SURVEY] Обрабатываем зону: ", zone.zone_id)
 		if zone.has_method("perform_survey"):
 			zone.perform_survey()
+			print("[SURVEY] Георазведка зоны ", zone.zone_id, " завершена")
+		else:
+			print("[SURVEY] ОШИБКА: зона ", zone.zone_id, " не имеет метода perform_survey")
 	
 	print("[SURVEY] Георазведка начата")
 	
@@ -147,13 +191,19 @@ func _on_income_changed(new_income):
 ## Обработчик запроса на георазведку от HUD
 func _on_survey_requested():
 	print("[SURVEY] Получен запрос на георазведку от HUD")
+	print("[SURVEY] Вызываем start_survey()")
 	start_survey()
+	print("[SURVEY] start_survey() завершен")
 
 ## Обработчик запроса на строительство от HUD
 func _on_build_requested(material: int):
 	print("[BUILD] Получен запрос на строительство с материалом %d от HUD" % material)
 	if build_controller:
+		print("[BUILD] BuildController найден, вызываем start_preview")
 		build_controller.start_preview(material)
+		print("[BUILD] start_preview вызван")
+	else:
+		print("[BUILD] ОШИБКА: BuildController не найден!")
 
 ## Обработка подтверждения строительства от BuildController
 func _on_build_confirmed(position: Vector2, material: int):
@@ -182,7 +232,7 @@ func find_build_zone_at_position(position: Vector2):
 
 # [Cursor] Создать виртуальную зону для строительства где угодно
 func create_virtual_build_zone(position: Vector2):
-	var virtual_zone = preload("res://scenes/build_zone.tscn").instantiate()
+	var virtual_zone = preload("res://scenes/build/build_zone.tscn").instantiate()
 	virtual_zone.global_position = position
 	virtual_zone.zone_id = "virtual_" + str(Time.get_unix_time_from_system())
 	virtual_zone.is_surveyed = false  # Без георазведки - будет быстрее ломаться
@@ -224,8 +274,6 @@ func build_dam_with_material(build_zone, material: int) -> bool:
 		if build_zone.has_method("update_zone_visual"):
 			build_zone.update_zone_visual()
 		print("[BUILD] Виртуальная зона помечена как занятая")
-	else:
-		print("[BUILD] Предупреждение: зона для занятия не найдена")
 	
 	change_state(GameState.OPERATING)
 	dam.start_operation()

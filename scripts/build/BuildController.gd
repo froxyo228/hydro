@@ -10,7 +10,7 @@ var selected_material: int = 4  # CONCRETE
 var preview_position: Vector2 = Vector2.ZERO
 
 # [Cursor] Сигналы для HUD
-signal preview_moved(position: Vector2, material: int)
+signal preview_moved(position: Vector2, planned_strength: float)
 signal preview_started(material: int)
 signal preview_ended()
 signal build_confirmed(position: Vector2, material: int)
@@ -47,12 +47,12 @@ func update_preview_position(position: Vector2):
 	var valid_position = get_valid_build_position(position)
 	preview_position = valid_position
 	
-	# [Cursor] Эмитим сигнал для HUD
-	preview_moved.emit(valid_position, selected_material)
+	# [Cursor] Получаем планируемую прочность и эмитим сигнал для HUD
+	var planned_strength = get_planned_strength(valid_position)
+	preview_moved.emit(valid_position, planned_strength)
 	
 	# [Cursor] Логируем движение превью (реже, чтобы не спамить)
-	var _planned_strength = get_planned_strength(valid_position)
-	# print("[Build] Preview at: ", valid_position, "; planned=", int(_planned_strength))  # Отключено для производительности
+	print("[Build] Preview at: ", valid_position, "; planned=", int(planned_strength))
 
 # [Cursor] Получить валидную позицию для строительства
 func get_valid_build_position(target_position: Vector2) -> Vector2:

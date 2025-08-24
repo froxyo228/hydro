@@ -53,23 +53,30 @@ func initialize(zone, surveyed: bool, dam_material: int = 0):
 	material_type = dam_material
 	global_position = zone.global_position
 	
+	print("[DAM] Инициализация плотины с материалом: ", dam_material)
+	
 	# [Cursor] Рассчитываем начальную прочность на основе материала
 	var material_system = get_node_or_null("/root/MaterialSystem")
 	if material_system:
-		var base_strength = material_system.get_base_strength(material_type)
+		var base_strength = material_system.get_base_strength(dam_material)
+		print("[DAM] Базовая прочность материала: ", base_strength)
 		
 		# [Cursor] Если есть георазведка - учитываем коэффициент почвы
 		if was_surveyed and zone.has_method("get_geological_stability"):
 			var soil_coeff = zone.geological_stability
 			max_strength = base_strength * soil_coeff
+			print("[DAM] С георазведкой, коэффициент почвы: ", soil_coeff)
 		else:
 			max_strength = base_strength
+			print("[DAM] Без георазведки, используем базовую прочность")
 		
 		current_strength = max_strength
+		print("[DAM] Итоговая прочность: ", current_strength)
 	else:
 		# [Cursor] Fallback если система не готова
 		max_strength = 50.0
 		current_strength = max_strength
+		print("[DAM] MaterialSystem не найден, используем fallback прочность: ", max_strength)
 	
 	# Если не было георазведки, увеличиваем деградацию
 	if not was_surveyed:

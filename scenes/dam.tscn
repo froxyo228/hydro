@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dcl1nknpbrrso"]
+
+[ext_resource type="Script" uid="uid://5x0jjiyxlqiq" path="res://scripts/Dam.gd" id="1_dam_script"]
+[ext_resource type="Texture2D" uid="uid://dw7x1x1gf3jdt" path="res://sprites/dam_placeholder.png" id="2_dam_texture"]
+
+[node name="Dam" type="Node2D"]
+script = ExtResource("1_dam_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_dam_texture")
