@@ -6,6 +6,7 @@
 script = ExtResource("1_2q6dc")
 
 [node name="River" type="Node2D" parent="."]
+position = Vector2(576, 324)
 
 [node name="RiverRect" type="ColorRect" parent="River"]
 offset_left = -400.0

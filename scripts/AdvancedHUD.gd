@@ -1,7 +1,7 @@
 # ========== AdvancedHUD.gd ==========
 extends CanvasLayer
 
-var selected_build_zone: BuildZone = null
+var selected_build_zone = null
 var selected_material: int = 0
 var dam_info_widgets: Array = []
 
@@ -73,7 +73,7 @@ func setup_material_options():
 	if material_option:
 		material_option.clear()
 		# [Cursor] Используем новые материалы из MaterialSystem
-		var material_system = get_tree().get_first_node_in_group("material_system")
+		var material_system = get_node_or_null("/root/MaterialSystem")
 		if material_system:
 			for material in material_system.get_all_materials():
 				material_option.add_item(material.name)
@@ -107,7 +107,7 @@ func _on_river_flow_changed(new_flow):
 	if river_flow_label:
 		river_flow_label.text = "Поток реки: " + str(int(new_flow)) + " м³/с"
 
-func _on_zone_selected(zone: BuildZone):
+func _on_zone_selected(zone):
 	selected_build_zone = zone
 	print("Выбрана зона: ", zone.zone_id)
 	update_button_states()
@@ -259,6 +259,11 @@ func _on_preview_moved(position: Vector2, _material: int):
 		if build_controller:
 			var planned_strength = build_controller.get_planned_strength(position)
 			planned_strength_label.text = "Планируемая прочность: {} ед.".format(int(planned_strength))
+			print("[HUD] Обновлена прочность: ", int(planned_strength))
+		else:
+			print("[HUD] BuildController не найден!")
+	else:
+		print("[HUD] planned_strength_label не найден!")
 
 func _on_preview_ended():
 	print("[Build] Превью завершено")

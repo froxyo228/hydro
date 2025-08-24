@@ -24,7 +24,7 @@ func _ready():
 	# [Cursor] Подключаемся к системам
 	await get_tree().process_frame
 	geo_data = get_tree().get_first_node_in_group("geo_data")
-	material_system = get_tree().get_first_node_in_group("material_system")
+	material_system = get_node_or_null("/root/MaterialSystem")
 
 # [Cursor] Начать превью с выбранным материалом
 func start_preview(material: int):
@@ -50,23 +50,13 @@ func update_preview_position(position: Vector2):
 	# [Cursor] Эмитим сигнал для HUD
 	preview_moved.emit(valid_position, selected_material)
 	
-	# [Cursor] Логируем движение превью
-	var planned_strength = get_planned_strength(valid_position)
-	print("[Build] Preview at: ", valid_position, "; planned=", int(planned_strength))
+	# [Cursor] Логируем движение превью (реже, чтобы не спамить)
+	var _planned_strength = get_planned_strength(valid_position)
+	# print("[Build] Preview at: ", valid_position, "; planned=", int(_planned_strength))  # Отключено для производительности
 
 # [Cursor] Получить валидную позицию для строительства
 func get_valid_build_position(target_position: Vector2) -> Vector2:
-	if not geo_data:
-		return target_position
-	
-	# [Cursor] Сначала пробуем найти ближайшую BuildZone
-	var nearest_zone_position = geo_data.get_nearest_build_position(target_position)
-	
-	# [Cursor] Если нашли зону рядом - используем её позицию
-	if nearest_zone_position.distance_to(target_position) < 100.0:
-		return nearest_zone_position
-	
-	# [Cursor] Иначе возвращаем исходную позицию (будет ограничена в DamPreview)
+	# [Cursor] Можно строить где угодно - просто возвращаем позицию курсора
 	return target_position
 
 # [Cursor] Подтвердить строительство
@@ -110,10 +100,12 @@ func can_build_at(position: Vector2) -> bool:
 	if current_state != State.PREVIEW:
 		return false
 	
-	# [Cursor] Проверяем, что позиция находится в BuildZone
+	# [Cursor] Можно строить где угодно! Просто проверим, что не в уже занятой зоне
 	var build_zones = get_tree().get_nodes_in_group("build_zones")
 	for zone in build_zones:
 		if zone.has_method("get_rect") and zone.get_rect().has_point(position - zone.global_position):
-			return not zone.is_occupied
+			if zone.is_occupied:
+				return false  # Нельзя строить в занятой зоне
 	
-	return false
+	# [Cursor] В остальных случаях - можно строить!
+	return true

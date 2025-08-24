@@ -15,7 +15,7 @@ enum DamStatus {
 }
 
 # Характеристики плотины
-var build_zone: BuildZone
+var build_zone
 var was_surveyed: bool
 var current_status: DamStatus = DamStatus.UNDER_CONSTRUCTION
 var structural_integrity: float = 100.0  # 0-100%
@@ -47,14 +47,14 @@ func _ready():
 	timer.autostart = true
 	add_child(timer)
 
-func initialize(zone: BuildZone, surveyed: bool, dam_material: int = 0):
+func initialize(zone, surveyed: bool, dam_material: int = 0):
 	build_zone = zone
 	was_surveyed = surveyed
 	material_type = dam_material
 	global_position = zone.global_position
 	
 	# [Cursor] Рассчитываем начальную прочность на основе материала
-	var material_system = get_tree().get_first_node_in_group("material_system")
+	var material_system = get_node_or_null("/root/MaterialSystem")
 	if material_system:
 		var base_strength = material_system.get_base_strength(material_type)
 		
@@ -103,11 +103,14 @@ func calculate_power_output() -> float:
 	# Учитываем структурную целостность
 	var efficiency = structural_integrity / 100.0
 	
-	# Учитываем поток реки
+	# Учитываем поток реки (с проверками)
 	var river_system = get_tree().get_first_node_in_group("river_system")
 	var flow_coefficient = 1.0
-	if river_system:
+	if river_system and river_system.has_method("get_power_coefficient"):
 		flow_coefficient = river_system.get_power_coefficient()
+	elif not river_system:
+		# [Cursor] Если река не найдена, используем базовый коэффициент
+		flow_coefficient = 1.0
 	
 	return base_power * efficiency * flow_coefficient
 
@@ -183,7 +186,7 @@ func perform_maintenance() -> int:
 func update_visual_status():
 	# [Cursor] Получаем название материала для отображения
 	var material_name = "Неизвестно"
-	var material_system = get_tree().get_first_node_in_group("material_system")
+	var material_system = get_node_or_null("/root/MaterialSystem")
 	if material_system:
 		var material_obj = material_system.get_material(material_type)
 		if material_obj:

@@ -63,7 +63,7 @@ func check_systems():
 func check_materials():
 	print("\n🧱 Проверка материалов:")
 	
-	var material_system = get_tree().get_first_node_in_group("material_system")
+	var material_system = get_node_or_null("/root/MaterialSystem")
 	if material_system:
 		var materials = material_system.get_all_materials()
 		print("  📦 Найдено материалов: %d" % materials.size())

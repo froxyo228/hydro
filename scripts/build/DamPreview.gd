@@ -23,10 +23,12 @@ func _ready():
 	visible = false
 
 func _process(_delta):
-	# [Cursor] Обновляем позицию превью только если активно
-	if build_controller and build_controller.current_state == 1: # PREVIEW state
+	# [Cursor] Обновляем позицию превью только если активно и системы готовы
+	if build_controller and build_controller.current_state == 1 and visible: # PREVIEW state
 		var mouse_pos = get_global_mouse_position()
-		update_preview_position(mouse_pos)
+		# [Cursor] Ограничиваем частоту обновлений, чтобы не спамить ошибками
+		if global_position.distance_to(mouse_pos) > 5.0:  # Обновляем только при значительном движении
+			update_preview_position(mouse_pos)
 
 # [Cursor] Обновить позицию превью
 func update_preview_position(target_position: Vector2):
@@ -37,10 +39,11 @@ func update_preview_position(target_position: Vector2):
 	var valid_position = build_controller.get_valid_build_position(target_position)
 	global_position = valid_position
 	
-	# [Cursor] Обновляем позицию в контроллере
-	build_controller.update_preview_position(valid_position)
+	# [Cursor] Обновляем позицию в контроллере (с проверкой)
+	if build_controller.has_method("update_preview_position"):
+		build_controller.update_preview_position(valid_position)
 	
-	# [Cursor] Обновляем текст превью
+	# [Cursor] Обновляем текст превью (с проверкой)
 	update_preview_text(valid_position)
 
 # [Cursor] Обновить текст превью
@@ -52,7 +55,7 @@ func update_preview_text(preview_position: Vector2):
 	var material_name = "Неизвестно"
 	
 	# [Cursor] Получаем название материала
-	var material_system = get_tree().get_first_node_in_group("material_system")
+	var material_system = get_node_or_null("/root/MaterialSystem")
 	if material_system:
 		var material_obj = material_system.get_material(build_controller.selected_material)
 		if material_obj:

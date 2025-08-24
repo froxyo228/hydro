@@ -1,14 +1,43 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
-# Godot-specific
+
+# Godot import cache (папки, но не отдельные .import файлы)
 .import/
+
+# Godot export
 export.cfg
 export_presets.cfg
+/builds/
 
-# OS-specific
+# Временные файлы Godot
+*.tmp
+*.tscn~
+*.gd~
+
+# OS-specific files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# VS Code
+# IDE files
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# User data
+user://
+
+# Compiled files
+*.o
+*.so
+*.dll
+*.exe
+
+# Documentation build artifacts
+/docs/_build/

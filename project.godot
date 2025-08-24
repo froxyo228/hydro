@@ -17,10 +17,10 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GameManager="*res://scripts/GameManager.gd"
-ConfigManager="*res://scripts/ConfigManager.gd"
+GameManager="*res://scripts/core/GameManager.gd"
+ConfigManager="*res://scripts/core/ConfigManager.gd"
 BuildController="*res://scripts/build/BuildController.gd"
-MaterialSystem="*res://scripts/MaterialSystem.gd"
+MaterialSystem="*res://scripts/core/MaterialSystem.gd"
 GeoData="*res://scripts/world/GeoData.gd"
 
 [input]

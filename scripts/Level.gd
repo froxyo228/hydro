@@ -13,20 +13,30 @@ func _ready():
 	setup_systems()
 
 func generate_build_zones():
-	# Создаем зоны строительства вдоль реки
+	# [Cursor] Создаем зоны строительства в удобных местах вокруг реки (которая теперь в центре)
 	var river = $River
-	var river_length = 800  # Длина реки
-	var spacing = river_length / num_build_zones
+	var river_pos = river.position  # (576, 324)
 	
-	for i in range(num_build_zones):
-		var zone = preload("res://scenes/build_zone.tscn").instantiate()  # Или создавай через код
-		zone.zone_id = "zone_" + str(i)
-		zone.position = Vector2(i * spacing - river_length/2, randf_range(-50, 50))
+	# [Cursor] Предустановленные позиции зон для удобного тестирования
+	var zone_configs = [
+		{"id": "zone_1", "pos": Vector2(-200, 0), "power": 120.0, "stability": 0.8, "surveyed": false},
+		{"id": "zone_2", "pos": Vector2(0, -100), "power": 100.0, "stability": 0.9, "surveyed": true, "safe": true},
+		{"id": "zone_3", "pos": Vector2(200, 0), "power": 80.0, "stability": 0.6, "surveyed": false},
+		{"id": "zone_4", "pos": Vector2(0, 100), "power": 150.0, "stability": 0.4, "surveyed": true, "safe": false}
+	]
+	
+	for i in range(min(zone_configs.size(), num_build_zones)):
+		var config = zone_configs[i]
+		var zone = preload("res://scenes/build_zone.tscn").instantiate()
+		zone.zone_id = config.id
+		zone.position = river_pos + config.pos  # Относительно реки
 		
-		# Случайные характеристики
-		zone.difficulty_modifier = randi() % 6
-		zone.power_potential = randf_range(50, 150)
-		zone.geological_stability = randf_range(0.3, 1.0)
+		# Настраиваем характеристики
+		zone.power_potential = config.power
+		zone.geological_stability = config.stability
+		zone.is_surveyed = config.get("surveyed", false)
+		zone.is_safe = config.get("safe", false)
+		zone.difficulty_modifier = int((1.0 - config.stability) * 5)
 		
 		zone.add_to_group("build_zones")
 		river.add_child(zone)

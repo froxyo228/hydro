@@ -79,7 +79,7 @@ func _on_survey_completed():
 	print("Георазведка завершена")
 	change_state(GameState.PLANNING)
 
-func build_dam(build_zone: BuildZone, skip_survey: bool = false) -> bool:
+func build_dam(build_zone, skip_survey: bool = false) -> bool:
 	if current_state != GameState.PLANNING:
 		return false
 	
@@ -109,7 +109,7 @@ func build_dam(build_zone: BuildZone, skip_survey: bool = false) -> bool:
 	
 	return true
 
-func calculate_construction_cost(build_zone: BuildZone) -> int:
+func calculate_construction_cost(build_zone) -> int:
 	# Базовая стоимость + модификаторы от сложности местности
 	var cost = base_construction_cost
 	cost += build_zone.difficulty_modifier * 10000
@@ -117,18 +117,18 @@ func calculate_construction_cost(build_zone: BuildZone) -> int:
 
 # [Cursor] Новые методы для работы с BuildController
 func _on_build_confirmed(position: Vector2, material: int):
-	print("[Cursor] Строительство подтверждено в позиции: ", position, " материал: ", material)
+	print("[Build] Строительство подтверждено в позиции: ", position, " материал: ", material)
 	
-	# [Cursor] Находим ближайшую BuildZone
+	# [Cursor] Пробуем найти BuildZone, но если нет - строим виртуальную
 	var build_zone = find_build_zone_at_position(position)
 	if not build_zone:
-		print("[Cursor] Ошибка: не найдена BuildZone в позиции")
-		return
+		print("[Build] Создаем виртуальную зону для строительства")
+		build_zone = create_virtual_build_zone(position)
 	
 	# [Cursor] Строим плотину с выбранным материалом
 	build_dam_with_material(build_zone, material)
 
-func find_build_zone_at_position(position: Vector2) -> BuildZone:
+func find_build_zone_at_position(position: Vector2):
 	var build_zones = get_tree().get_nodes_in_group("build_zones")
 	var min_distance = 100.0  # Максимальное расстояние для поиска
 	var closest_zone = null
@@ -141,7 +141,20 @@ func find_build_zone_at_position(position: Vector2) -> BuildZone:
 	
 	return closest_zone
 
-func build_dam_with_material(build_zone: BuildZone, material: int) -> bool:
+# [Cursor] Создать виртуальную зону для строительства где угодно
+func create_virtual_build_zone(position: Vector2):
+	var virtual_zone = preload("res://scenes/build_zone.tscn").instantiate()
+	virtual_zone.global_position = position
+	virtual_zone.zone_id = "virtual_" + str(Time.get_unix_time_from_system())
+	virtual_zone.is_surveyed = false  # Без георазведки - будет быстрее ломаться
+	virtual_zone.geological_stability = 0.5  # Средняя стабильность
+	virtual_zone.difficulty_modifier = 2.0  # Дороже строить
+	virtual_zone.is_occupied = false
+	
+	print("[Build] Виртуальная зона создана: ", virtual_zone.zone_id)
+	return virtual_zone
+
+func build_dam_with_material(build_zone, material: int) -> bool:
 	if current_state != GameState.PLANNING:
 		return false
 	
@@ -167,15 +180,19 @@ func build_dam_with_material(build_zone: BuildZone, material: int) -> bool:
 	# Запускаем строительство (можно добавить анимацию/таймер)
 	await get_tree().create_timer(2.0).timeout
 	
-	# [Cursor] Занимаем зону после успешного строительства
-	if build_zone and build_zone.has_method("occupy"):
-		build_zone.occupy()
-		print("[Build] Зона ", build_zone.zone_id, " занята")
-	elif build_zone:
-		build_zone.is_occupied = true
-		if build_zone.has_method("update_visual"):
-			build_zone.update_visual()
-		print("[Build] Зона ", build_zone.zone_id, " помечена как занятая")
+	# [Cursor] Занимаем зону после успешного строительства (с проверками)
+	if build_zone:
+		if build_zone.has_method("occupy"):
+			build_zone.occupy()
+			print("[Build] Зона ", build_zone.zone_id, " занята")
+		else:
+			# [Cursor] Fallback для виртуальных зон
+			build_zone.is_occupied = true
+			if build_zone.has_method("update_zone_visual"):
+				build_zone.update_zone_visual()
+			print("[Build] Виртуальная зона помечена как занятая")
+	else:
+		print("[Build] Предупреждение: зона для занятия не найдена")
 	
 	change_state(GameState.OPERATING)
 	dam.start_operation()

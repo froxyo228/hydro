@@ -1,6 +1,5 @@
 # ========== BuildZone.gd ==========
 # Зона строительства - место где можно построить плотину
-class_name BuildZone
 extends Area2D
 
 signal zone_selected(zone)
@@ -34,20 +33,20 @@ func setup_zone_visual():
 	zone_visual.color.a = 0.3
 	add_child(zone_visual)
 	
-	update_visual()
+	update_zone_visual()
 
-func _on_input_event(viewport, event, shape_idx):
+func _on_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if not is_occupied:
 			zone_selected.emit(self)
 
 func _on_mouse_entered():
 	is_highlighted = true
-	update_visual()
+	update_zone_visual()
 
 func _on_mouse_exited():
 	is_highlighted = false
-	update_visual()
+	update_zone_visual()
 
 func perform_survey():
 	is_surveyed = true
@@ -56,9 +55,9 @@ func perform_survey():
 	var random_factor = randf()
 	is_safe = geological_stability > 0.6 and random_factor > 0.3
 	
-	update_visual()
+	update_zone_visual()
 
-func update_visual():
+func update_zone_visual():
 	if is_occupied:
 		zone_visual.color = Color.GRAY
 		return
@@ -78,4 +77,4 @@ func update_visual():
 
 func occupy():
 	is_occupied = true
-	update_visual()
+	update_zone_visual()
