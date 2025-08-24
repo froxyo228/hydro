@@ -62,6 +62,11 @@ func perform_survey():
 	print("[BUILDZONE] Георазведка зоны ", zone_id, " завершена")
 
 func update_zone_visual():
+	# Проверяем, что zone_visual существует
+	if not zone_visual:
+		print("[BUILDZONE] ОШИБКА: zone_visual равен null для зоны: ", zone_id)
+		return
+	
 	print("[BUILDZONE] Обновляем визуал зоны: ", zone_id, " (разведана: ", is_surveyed, ", безопасна: ", is_safe, ")")
 	
 	if is_occupied:

@@ -29,7 +29,7 @@ func generate_build_zones():
 		var config = zone_configs[i]
 		var zone = preload("res://scenes/build/build_zone.tscn").instantiate()
 		zone.zone_id = config.id
-		zone.position = river_pos + config.pos  # Относительно реки
+		zone.position = config.pos  # Позиция относительно родителя (реки)
 		
 		# Настраиваем характеристики
 		zone.power_potential = config.power
@@ -40,6 +40,7 @@ func generate_build_zones():
 		
 		zone.add_to_group("build_zones")
 		river.add_child(zone)
+		print("[LEVEL] Зона ", zone.zone_id, " создана в позиции: ", zone.global_position)
 
 func setup_systems():
 	# [Cursor] Создаем и добавляем новые системы

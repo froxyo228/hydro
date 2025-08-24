@@ -35,7 +35,13 @@ func _ready():
 	await get_tree().process_frame
 	await get_tree().process_frame  # Дополнительный фрейм для HUD
 	
-	print("[STATE] Начинаем подключение систем...")
+	# Ждем, пока HUD появится в группе
+	print("[STATE] Ожидаем инициализации HUD...")
+	while get_tree().get_nodes_in_group("hud").size() == 0:
+		await get_tree().process_frame
+		print("[STATE] HUD еще не найден, ждем...")
+	
+	print("[STATE] HUD найден, начинаем подключение систем...")
 	setup_system_connections()
 
 ## Настройка подключений к другим системам
@@ -52,7 +58,7 @@ func setup_system_connections():
 	
 	# Подключаемся к HUD для получения запросов пользователя
 	var hud = get_tree().get_first_node_in_group("hud")
-	print("[STATE] Поиск HUD в группе 'hud'...")
+	print("[STATE] Подключение к HUD...")
 	if hud:
 		print("[STATE] HUD найден: ", hud.name)
 		if hud.has_signal("survey_requested"):
@@ -69,29 +75,7 @@ func setup_system_connections():
 		
 		print("[STATE] HUD подключен")
 	else:
-		print("[STATE] ОШИБКА: HUD не найден в группе 'hud'!")
-		# Показываем все группы для отладки
-		var groups = get_tree().get_nodes_in_group("hud")
-		print("[STATE] Всего узлов в группе 'hud': ", groups.size())
-		for group in groups:
-			print("[STATE] Узел в группе 'hud': ", group.name, " (", group.get_class(), ")")
-		
-		# Попытка повторного поиска через 1 секунду
-		print("[STATE] Повторная попытка подключения к HUD через 1 секунду...")
-		await get_tree().create_timer(1.0).timeout
-		
-		hud = get_tree().get_first_node_in_group("hud")
-		if hud:
-			print("[STATE] HUD найден при повторной попытке: ", hud.name)
-			if hud.has_signal("survey_requested"):
-				hud.survey_requested.connect(_on_survey_requested)
-				print("[STATE] Сигнал survey_requested подключен (повторно)")
-			if hud.has_signal("build_requested"):
-				hud.build_requested.connect(_on_build_requested)
-				print("[STATE] Сигнал build_requested подключен (повторно)")
-			print("[STATE] HUD подключен (повторно)")
-		else:
-			print("[STATE] ОШИБКА: HUD так и не найден!")
+		print("[STATE] ОШИБКА: HUD не найден после ожидания!")
 	
 	print("[STATE] Системы подключены")
 
@@ -241,6 +225,9 @@ func create_virtual_build_zone(position: Vector2):
 	virtual_zone.power_potential = 80.0  # Меньше потенциала
 	virtual_zone.is_occupied = false
 	
+	# Добавляем в группу build_zones
+	virtual_zone.add_to_group("build_zones")
+	
 	print("[BUILD] Виртуальная зона создана: ", virtual_zone.zone_id)
 	return virtual_zone
 
@@ -272,8 +259,12 @@ func build_dam_with_material(build_zone, material: int) -> bool:
 		# [Cursor] Fallback для виртуальных зон
 		build_zone.is_occupied = true
 		if build_zone.has_method("update_zone_visual"):
-			build_zone.update_zone_visual()
-		print("[BUILD] Виртуальная зона помечена как занятая")
+			# Проверяем, что zone_visual существует
+			if build_zone.zone_visual:
+				build_zone.update_zone_visual()
+			else:
+				print("[BUILD] Виртуальная зона не имеет zone_visual, пропускаем обновление")
+		print("[BUILD] Виртуальная зона помечена как занятой")
 	
 	change_state(GameState.OPERATING)
 	dam.start_operation()
